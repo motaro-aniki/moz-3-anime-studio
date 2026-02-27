@@ -219,6 +219,8 @@ body {
   justify-content: center;
   position: relative;
   overflow: hidden;
+  color-scheme: light;
+  mix-blend-mode: normal;
 }
 
 .preview-canvas {

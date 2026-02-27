@@ -68,9 +68,10 @@ function App() {
   // Load BGM list dynamically
   useEffect(() => {
     try {
-      const fs = window.require ? window.require('fs') : null;
-      const path = window.require ? window.require('path') : null;
-      if (fs && path) {
+      const isElectron = !!(window && window.process && window.process.type);
+      if (isElectron) {
+        const fs = window.require('fs');
+        const path = window.require('path');
         let bgmDir;
         if (import.meta.env.DEV) {
           bgmDir = path.join(process.cwd(), 'public', 'BGM');
@@ -78,7 +79,6 @@ function App() {
           const processEnv = window.require('process');
           bgmDir = path.join(processEnv.resourcesPath, 'BGM');
         }
-
         if (fs.existsSync(bgmDir)) {
           const files = fs.readdirSync(bgmDir);
           const audioFiles = files.filter(f => /\.(mp3|wav|ogg|m4a)$/i.test(f));
@@ -100,14 +100,14 @@ function App() {
   }, []);
 
   const getBgmUrl = (filename) => {
-    if (import.meta.env.DEV) {
+    const isElectron = !!(window && window.process && window.process.type);
+    if (!isElectron) {
       return `/BGM/${filename}`;
-    } else {
-      const path = window.require('path');
-      const processEnv = window.require('process');
-      const bgmDir = path.join(processEnv.resourcesPath, 'BGM');
-      return `file:///${bgmDir.replace(/\\/g, '/')}/${encodeURIComponent(filename)}`;
     }
+    const path = window.require('path');
+    const processEnv = window.require('process');
+    const bgmDir = path.join(processEnv.resourcesPath, 'BGM');
+    return `file:///${bgmDir.replace(/\\/g, '/')}/${encodeURIComponent(filename)}`;
   };
 
   const playBgmTrack = (trackName) => {
@@ -207,27 +207,13 @@ function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    // Toggle body classes and Fullscreen API for stream mode
+    // Toggle body classes for stream mode (fullscreen logic removed)
     if (isStreamMode) {
       document.documentElement.classList.add('stream-mode');
       document.body.classList.add('stream-mode');
-
-      // Request browser fullscreen to hide tabs/bookmarks
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(err => {
-          console.warn(`Error attempting to enable fullscreen: ${err.message}`);
-        });
-      }
     } else {
       document.documentElement.classList.remove('stream-mode');
       document.body.classList.remove('stream-mode');
-
-      // Exit browser fullscreen
-      if (document.fullscreenElement && document.exitFullscreen) {
-        document.exitFullscreen().catch(err => {
-          console.warn(`Error attempting to exit fullscreen: ${err.message}`);
-        });
-      }
     }
 
     return () => {
@@ -307,7 +293,25 @@ function App() {
 
     saveData();
 
-    return () => saveData.cancel();
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        saveData.flush(); // Force immediate execution of pending save
+      }
+    };
+    
+    // Also save immediately beforeunload (closing tab)
+    const handleBeforeUnload = () => {
+      saveData.flush();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      saveData.cancel();
+    };
   }, [expressions, globalSettings, audioAnalyzer.calibratedNormal, hasLoadedData]);
 
   // --- AUTO SWITCH LOGIC ---
@@ -441,7 +445,7 @@ function App() {
             onSelect={setActiveTabId}
             setTabs={setExpressions}
           />
-          <button className="header-stream-btn" onClick={() => setIsStreamMode(true)} title="配信モード（全画面）を開始する">📺</button>
+          <button className="header-stream-btn" onClick={() => setIsStreamMode(true)} title="配信モードを開始する">📺</button>
           <button className="gear-btn" onClick={() => setIsModalOpen(true)} title="音声キャリブレーション設定">⚙️</button>
         </header>
       )}

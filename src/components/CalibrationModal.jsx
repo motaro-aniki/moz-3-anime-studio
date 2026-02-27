@@ -191,8 +191,8 @@ export default function CalibrationModal({
                 <div className="setting-section" style={{ padding: '16px', border: '1px solid var(--accent-color)', borderRadius: '8px', background: 'rgba(6, 182, 212, 0.05)' }}>
                     <h3 style={{ marginBottom: '16px', color: 'var(--accent-color)' }}>📹 ③ 配信モード (OBS用)</h3>
                     <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '16px', lineHeight: '1.6' }}>
-                        設定画面やボタン等のUIをすべて非表示にし、モデルだけを全画面表示するモードです。<br />
-                        OBS等の配信ソフトでクロマキー合成する際に最適です。
+                        設定画面やボタン等のUIをすべて非表示にし、モデルだけを表示するモードです（背景透過）。<br />
+                        OBS等の配信ソフトでウィンドウキャプチャしてクロマキー合成する際に最適です。
                     </p>
 
                     <button
@@ -200,7 +200,7 @@ export default function CalibrationModal({
                         onClick={onStartStream}
                         style={{ width: '100%', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--accent-color)' }}
                     >
-                        <span>📺</span> 配信モード（全画面）を開始する
+                        <span>📺</span> 配信モードを開始する
                     </button>
 
                     <div style={{ background: 'var(--bg-color)', padding: '12px', borderRadius: '4px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>

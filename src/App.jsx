@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Preview from './components/Preview';
 import SlotPanel from './components/SlotPanel';
 import SettingsPanel from './components/SettingsPanel';

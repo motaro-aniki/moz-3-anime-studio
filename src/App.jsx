@@ -457,7 +457,7 @@ function App() {
             style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
             title="このアプリについて"
           >
-            <img src="/logo.png" alt="Logo" className="header-logo" />
+            <img src="./logo.png" alt="Logo" className="header-logo" />
             <div className="header-title">MOZ-3 Anime Studio</div>
           </div>
           <ExpressionTabs

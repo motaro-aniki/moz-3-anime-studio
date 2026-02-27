@@ -88,7 +88,7 @@ export default function AboutModal({ isOpen, onClose }) {
 
                         <div style={{ marginBottom: '24px' }}>
                             <img
-                                src="/motako.png"
+                                src="./motako.png"
                                 alt="モタ子"
                                 style={{ width: '200px', height: 'auto', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}
                             />

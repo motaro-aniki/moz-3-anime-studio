@@ -186,8 +186,13 @@ function App() {
       const data = await loadAppData();
       if (data) {
         if (data.expressions && data.expressions.length > 0) {
-          setExpressions(data.expressions);
-          setActiveTabId(data.expressions[0].id);
+          const merged = data.expressions.map(exp => ({
+            ...exp,
+            settings: { ...DEFAULT_EXP_SETTINGS, ...(exp.settings || {}) },
+            parts: { ...DEFAULT_PARTS, ...(exp.parts || {}) }
+          }));
+          setExpressions(merged);
+          setActiveTabId(merged[0].id);
         }
         if (data.globalSettings) {
           setGlobalSettings(prev => ({ ...prev, ...data.globalSettings, _initialCalibratedNormal: data.calibratedNormal }));

@@ -15,8 +15,11 @@ export default function DropZone({ label, icon, value, onChange }) {
 
     const processFile = (file) => {
         if (file && file.type.startsWith('image/')) {
-            const url = URL.createObjectURL(file);
-            onChange(url);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                onChange(reader.result);
+            };
+            reader.readAsDataURL(file);
         }
     };
 

@@ -45,7 +45,8 @@ function App() {
     autoLaugh: false,
     autoSilence: false,
     silenceThreshold: 50,
-    switchCooldown: 2.0
+    switchCooldown: 2.0,
+    bgmVolume: 50
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -126,7 +127,7 @@ function App() {
 
     const url = getBgmUrl(targetTrack);
     const audio = new Audio(url);
-    audio.volume = 0.5;
+    audio.volume = (globalSettings.bgmVolume ?? 50) / 100;
 
     audio.addEventListener('ended', () => {
       // Loop if a specific track is selected, or pick a new random track if random is selected
@@ -146,6 +147,12 @@ function App() {
     bgmAudioRef.current = audio;
     setIsBgmPlaying(true);
   };
+
+  useEffect(() => {
+    if (bgmAudioRef.current) {
+      bgmAudioRef.current.volume = (globalSettings.bgmVolume ?? 50) / 100;
+    }
+  }, [globalSettings.bgmVolume]);
 
   const stopBgm = () => {
     if (bgmAudioRef.current) {

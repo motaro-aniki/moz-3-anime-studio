@@ -266,7 +266,21 @@ export default function SettingsPanel({
                             ⏹ リセット
                         </button>
                     </div>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                    <div style={{ marginTop: '16px' }}>
+                        <div className="slider-header" style={{ marginBottom: '8px' }}>
+                            <span>音量</span>
+                            <span>{globalSettings.bgmVolume ?? 50}%</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={globalSettings.bgmVolume ?? 50}
+                            onChange={(e) => updateGlobal('bgmVolume', parseInt(e.target.value, 10))}
+                            className="range-slider"
+                        />
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '24px' }}>
                         音楽がなくて寂しいときはモタロが作曲したプリセットBGMを再生するのもオススメ
                     </p>
                 </div>

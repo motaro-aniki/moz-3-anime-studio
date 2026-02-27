@@ -6,6 +6,7 @@ const isDev = !app.isPackaged;
 
 function createWindow() {
     const win = new BrowserWindow({
+        title: 'MOZ-3 Anime Studio',
         width: 1200,
         height: 800,
         webPreferences: {

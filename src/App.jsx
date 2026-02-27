@@ -279,29 +279,46 @@ function App() {
   // --- AUDIO & ANIMATION HOOKS ---
   const audioAnalyzer = useAudioAnalyzer(globalSettings, hasLoadedData ? globalSettings._initialCalibratedNormal : null);
 
-  // Save data when state changes (debounced)
-  useEffect(() => {
-    if (!hasLoadedData) return;
+  // Create a stable debounced save function
+  const debouncedSave = useMemo(() => debounce(async (data) => {
+    try {
+      await saveAppData(data);
+    } catch (e) {
+      console.error(e);
+    }
+  }, 1000), []);
 
-    const saveData = debounce(() => {
-      saveAppData({
+  const manualSave = async () => {
+    try {
+      await saveAppData({
         expressions,
         globalSettings,
         calibratedNormal: audioAnalyzer.calibratedNormal
       });
-    }, 1000);
+      window.alert('手動セーブが完了しました！リロードしてテストしてみてください。');
+    } catch (e) {
+      // alert already handled in storage.js
+    }
+  };
 
-    saveData();
+  // Save data when state changes (debounced)
+  useEffect(() => {
+    if (!hasLoadedData) return;
+
+    debouncedSave({
+      expressions,
+      globalSettings,
+      calibratedNormal: audioAnalyzer.calibratedNormal
+    });
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        saveData.flush(); // Force immediate execution of pending save
+        debouncedSave.flush(); 
       }
     };
     
-    // Also save immediately beforeunload (closing tab)
     const handleBeforeUnload = () => {
-      saveData.flush();
+        debouncedSave.flush();
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -310,9 +327,8 @@ function App() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      saveData.cancel();
     };
-  }, [expressions, globalSettings, audioAnalyzer.calibratedNormal, hasLoadedData]);
+  }, [expressions, globalSettings, audioAnalyzer.calibratedNormal, hasLoadedData, debouncedSave]);
 
   // --- AUTO SWITCH LOGIC ---
   const lastManualTabRef = useRef(activeTabId);
@@ -463,17 +479,19 @@ function App() {
           <>
             <SlotPanel parts={activeExpression.parts} onPartChange={handlePartChange} />
             <SettingsPanel
-              globalSettings={globalSettings}
-              onGlobalSettingsChange={setGlobalSettings}
-              expSettings={activeExpression.settings}
-              onExpSettingsChange={handleExpSettingsChange}
-              audioAnalyzer={audioAnalyzer}
-              bgmList={bgmList}
-              selectedBgm={selectedBgm}
-              onBgmChange={handleBgmChange}
-              isBgmPlaying={isBgmPlaying}
-              toggleBgmPlay={toggleBgmPlay}
-              stopBgm={stopBgm}
+            globalSettings={globalSettings}
+            onGlobalSettingsChange={setGlobalSettings}
+            expSettings={expressions.find(e => e.id === activeTabId)?.settings || {}}
+            onExpSettingsChange={(newSettings) => updateExpression(activeTabId, 'settings', newSettings)}
+            audioAnalyzer={audioAnalyzer}
+            isStreamMode={isStreamMode}
+            onManualSave={manualSave}
+            bgmList={bgmList}
+            selectedBgm={selectedBgm}
+            onBgmChange={handleBgmChange}
+            isBgmPlaying={isBgmPlaying}
+            toggleBgmPlay={toggleBgmPlay}
+            stopBgm={stopBgm}
             />
           </>
         )}

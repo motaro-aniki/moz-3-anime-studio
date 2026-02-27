@@ -72,6 +72,8 @@ export const saveAppData = async (data) => {
         console.log('App data saved successfully.');
     } catch (err) {
         console.error('Error saving app data:', err);
+        window.alert('‼️ セーブ失敗 ‼️\n容量オーバーか、ブラウザのセキュリティ制限により保存できませんでした。\n' + err.message);
+        throw err;
     }
 };
 

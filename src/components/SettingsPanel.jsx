@@ -5,7 +5,9 @@ export default function SettingsPanel({
     expSettings, onExpSettingsChange,
     audioAnalyzer,
     bgmList, selectedBgm, onBgmChange,
-    isBgmPlaying, toggleBgmPlay, stopBgm
+    isBgmPlaying, toggleBgmPlay, stopBgm,
+    isStreamMode,
+    onManualSave
 }) {
     const fileInputRef = useRef(null);
 
@@ -268,6 +270,21 @@ export default function SettingsPanel({
                         音楽がなくて寂しいときはモタロが作曲したプリセットBGMを再生するのもオススメ
                     </p>
                 </div>
+            </div>
+
+            {/* 手動セーブボタン */}
+            <div className="setting-section" style={{ border: '1px solid var(--accent-color)', background: 'rgba(6, 182, 212, 0.05)', padding: '16px' }}>
+                <h3 style={{ marginBottom: '12px', color: 'var(--accent-color)' }}>💾 セーブ設定</h3>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                    設定は自動で保存されますが、ブラウザを閉じる前に手動でセーブすることで確実にデータを残すことができます。
+                </p>
+                <button 
+                  className="learning-btn" 
+                  onClick={onManualSave}
+                  style={{ width: '100%', background: 'var(--accent-color)', color: 'black', fontWeight: 'bold' }}
+                >
+                    今の状態を手動でセーブする
+                </button>
             </div>
         </div>
     );

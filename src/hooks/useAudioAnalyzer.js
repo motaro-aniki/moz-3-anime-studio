@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
 export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal = null) {
-    const { sensitivity, silenceThreshold, switchCooldown = 2.0 } = globalSettings;
+    const { sensitivity, silenceThreshold, switchCooldown = 2.0, enableCooldown = true } = globalSettings;
     // Refs for states to ensure the loop closure always reads the latest values
     const isActiveRef = useRef(false);
     const isPlayingFileRef = useRef(false);
@@ -262,13 +262,15 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
                     currentToneRef.current = rawTone;
                     setDetectedTone({ tone: rawTone, id: Date.now() });
 
-                    // Lock the switch for Cooldown_Time
-                    isLockedRef.current = true;
-                    if (lockTimerRef.current) clearTimeout(lockTimerRef.current);
+                    // Lock the switch for Cooldown_Time if enabled
+                    if (enableCooldown !== false && switchCooldown > 0) {
+                        isLockedRef.current = true;
+                        if (lockTimerRef.current) clearTimeout(lockTimerRef.current);
 
-                    lockTimerRef.current = setTimeout(() => {
-                        isLockedRef.current = false;
-                    }, switchCooldown * 1000); // converting seconds to ms
+                        lockTimerRef.current = setTimeout(() => {
+                            isLockedRef.current = false;
+                        }, switchCooldown * 1000); // converting seconds to ms
+                    }
                 }
             }
         }

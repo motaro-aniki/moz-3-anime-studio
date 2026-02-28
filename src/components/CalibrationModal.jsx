@@ -196,13 +196,20 @@ export default function CalibrationModal({
 
                     {/* 表情安定化（共通） */}
                     <div style={{ padding: '16px', border: '1px solid var(--glass-border)', borderRadius: '8px' }}>
-                        <div style={{ marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                             <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>切り替わった表情を維持する時間</span>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                                一度変化した表情を、指定した秒数は強制的に維持してチラつきを防止します。
-                            </p>
+                            <button
+                                className={`bg-toggle-btn ${globalSettings.enableCooldown !== false ? 'active' : ''}`}
+                                onClick={() => updateGlobal('enableCooldown', globalSettings.enableCooldown === false)}
+                                title={globalSettings.enableCooldown !== false ? "ON" : "OFF"}
+                            >
+                                <div className="bg-toggle-knob"></div>
+                            </button>
                         </div>
-                        <div className="slider-header" style={{ fontSize: '0.85rem', marginTop: '12px' }}>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                            一度変化した表情を、指定した秒数は強制的に維持してチラつきを防止します。
+                        </p>
+                        <div className="slider-header" style={{ fontSize: '0.85rem', marginTop: '12px', opacity: globalSettings.enableCooldown !== false ? 1 : 0.5 }}>
                             <span>維持秒数</span>
                             <span>{globalSettings.switchCooldown?.toFixed(1) || 1.0} 秒</span>
                         </div>
@@ -213,6 +220,8 @@ export default function CalibrationModal({
                             value={(globalSettings.switchCooldown || 1.0) * 10}
                             onChange={(e) => updateGlobal('switchCooldown', parseInt(e.target.value, 10) / 10)}
                             className="range-slider"
+                            disabled={globalSettings.enableCooldown === false}
+                            style={{ opacity: globalSettings.enableCooldown !== false ? 1 : 0.5 }}
                         />
                     </div>
 

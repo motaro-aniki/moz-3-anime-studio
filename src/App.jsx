@@ -70,6 +70,7 @@ function App() {
     autoSilence: true,
     silenceThreshold: 50,
     switchCooldown: 1.0,
+    enableCooldown: true,
     bgmVolume: 50,
     crossfade: true,
     crossfadeSpeed: 150

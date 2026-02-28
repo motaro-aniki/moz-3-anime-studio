@@ -201,9 +201,9 @@ export default function CalibrationModal({
                             <button
                                 className={`bg-toggle-btn ${globalSettings.enableCooldown !== false ? 'active' : ''}`}
                                 onClick={() => updateGlobal('enableCooldown', globalSettings.enableCooldown === false)}
-                                title={globalSettings.enableCooldown !== false ? "ON" : "OFF"}
+                                style={{ margin: 0 }}
                             >
-                                <div className="bg-toggle-knob"></div>
+                                {globalSettings.enableCooldown !== false ? 'ON' : 'OFF'}
                             </button>
                         </div>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>

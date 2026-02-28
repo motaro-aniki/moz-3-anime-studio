@@ -46,7 +46,8 @@ function App() {
     autoSilence: false,
     silenceThreshold: 50,
     switchCooldown: 2.0,
-    bgmVolume: 50
+    bgmVolume: 50,
+    globalTransform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -481,6 +482,7 @@ function App() {
       <main className="main-content">
         <Preview
           globalSettings={globalSettings}
+          onGlobalSettingsChange={setGlobalSettings}
           parts={activeExpression.parts}
           transform={transform}
           currentEye={currentEye}

@@ -677,9 +677,9 @@ body {
 }
 
 .bg-toggle-btn.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(6, 182, 212, 0.2);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 /* Glass Panels */

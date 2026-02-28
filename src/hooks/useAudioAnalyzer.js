@@ -379,13 +379,28 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
             // --- Laugh Detection Math ---
             // Condition 1: Peak volume recently was high (absorbs dips in 'ha-ha' rhythm)
             const isLoud = maxVol > 0.45;
-            // Condition 2: Pitch > Normal_Average * 1.5 (relaxed from 2.0 to avoid impossible triggers)
+            // Condition 2: Pitch > Normal_Average * 1.5
             const isHighPitch = smoothedPitch > (calibratedNormal * 1.5);
             // Condition 3: Envelope fluctuates rapidly (rhythm of laugh)
             const hasRhythm = volVariance > 0.15;
 
+            // Anti-False-Positive Filters (Click / Keyboard rejection)
+            let lowEnergy = 0;
+            let highEnergy = 0;
+            const midBin = Math.floor(2500 / binSize);
+            for (let i = startBin; i < dataArray.length; i++) {
+                if (i < midBin) lowEnergy += dataArray[i];
+                else highEnergy += dataArray[i];
+            }
+            // Vocal sounds concentrate energy in fundamentals and lower formants (below 2.5kHz)
+            const isVoiceLike = lowEnergy > (highEnergy * 1.5);
+
+            // A laugh should be sustained longer than a single mechanical click
+            const framesAboveThreshold = volHistory.filter(v => v > 0.15).length;
+            const isSustained = framesAboveThreshold >= 6; // At least ~100ms of decent volume
+
             // Gate Node / Switch Logic
-            if (globalSettings.autoLaugh && isLoud && isHighPitch && hasRhythm) {
+            if (globalSettings.autoLaugh && isLoud && isHighPitch && hasRhythm && isVoiceLike && isSustained) {
                 commitToneWithBuffer('laugh');
             } else {
                 commitToneWithBuffer('normal');

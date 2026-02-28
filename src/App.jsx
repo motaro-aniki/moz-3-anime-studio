@@ -28,6 +28,13 @@ export const DEFAULT_EXP_SETTINGS = {
   transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }
 };
 
+const handleWindowControl = (command) => {
+  if (window.require) {
+    const { ipcRenderer } = window.require('electron');
+    ipcRenderer.send('window-control', command);
+  }
+};
+
 function App() {
   const [activeTabId, setActiveTabId] = useState('1');
   const [expressions, setExpressions] = useState([
@@ -513,6 +520,13 @@ function App() {
           />
           <button className="header-stream-btn" onClick={() => setIsStreamMode(true)} title="配信モードを開始する">📺</button>
           <button className="gear-btn" onClick={() => setIsModalOpen(true)} title="音声キャリブレーション設定">⚙️</button>
+          
+          {/* Custom Window Controls */}
+          <div className="window-controls" style={{ display: 'flex', gap: '4px', marginLeft: '16px', WebkitAppRegion: 'no-drag' }}>
+            <button onClick={() => handleWindowControl('minimize')} className="win-btn" title="最小化">_</button>
+            <button onClick={() => handleWindowControl('maximize')} className="win-btn" title="最大化">□</button>
+            <button onClick={() => handleWindowControl('close')} className="win-btn close-btn" title="閉じる">×</button>
+          </div>
         </header>
       )}
 

@@ -12,6 +12,7 @@ function createWindow() {
         width: 1200,
         height: 800,
         transparent: true,
+        frame: false,
         backgroundColor: '#00000000',
         webPreferences: {
             nodeIntegration: true,
@@ -43,6 +44,17 @@ app.whenReady().then(async () => {
     }
 
     createWindow();
+
+    ipcMain.on('window-control', (event, command) => {
+        const win = BrowserWindow.fromWebContents(event.sender);
+        if (!win) return;
+        if (command === 'minimize') win.minimize();
+        if (command === 'maximize') {
+            if (win.isMaximized()) win.unmaximize();
+            else win.maximize();
+        }
+        if (command === 'close') win.close();
+    });
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {

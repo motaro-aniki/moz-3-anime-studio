@@ -482,16 +482,22 @@ function App() {
       <main className="main-content">
         <Preview
           globalSettings={globalSettings}
-          onGlobalSettingsChange={setGlobalSettings}
           parts={activeExpression.parts}
           transform={transform}
           currentEye={currentEye}
           currentMouthKey={currentMouthKey}
           isStreamMode={isStreamMode}
+          layoutTransform={activeExpression.settings.transform || { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }}
+          onLayoutTransformChange={(t) => handleExpSettingsChange({ ...activeExpression.settings, transform: t })}
         />
         {!isStreamMode && (
           <>
-            <SlotPanel parts={activeExpression.parts} onPartChange={handlePartChange} />
+            <SlotPanel 
+              parts={activeExpression.parts} 
+              onPartChange={handlePartChange} 
+              tabName={activeExpression.name}
+              onResetTransform={() => handleExpSettingsChange({ ...activeExpression.settings, transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 } })}
+            />
             <SettingsPanel
             globalSettings={globalSettings}
             onGlobalSettingsChange={setGlobalSettings}

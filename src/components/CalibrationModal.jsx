@@ -117,6 +117,37 @@ export default function CalibrationModal({
                 <div className="setting-section">
                     <h3 style={{ marginBottom: '16px' }}>② モード別・詳細設定</h3>
 
+                    {/* 表情クロスフェード設定 */}
+                    <div style={{ padding: '16px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '8px', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <span style={{ fontWeight: 'bold', color: 'white' }}>表情クロスフェード（アニメ化）</span>
+                            <button
+                                className={`bg-toggle-btn ${globalSettings.crossfade ? 'active' : ''}`}
+                                onClick={() => updateGlobal('crossfade', !globalSettings.crossfade)}
+                                style={{ margin: 0 }}
+                            >
+                                {globalSettings.crossfade ? 'ON' : 'OFF'}
+                            </button>
+                        </div>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', marginBottom: '12px' }}>
+                            表情が切り替わる際、中割りを自動生成して滑らかに繋げます。
+                        </p>
+                        <div className="slider-header" style={{ fontSize: '0.85rem' }}>
+                            <span>フェード速度</span>
+                            <span>{globalSettings.crossfadeSpeed || 150} ms</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="50"
+                            max="500"
+                            step="10"
+                            value={globalSettings.crossfadeSpeed || 150}
+                            onChange={(e) => updateGlobal('crossfadeSpeed', parseInt(e.target.value, 10))}
+                            className="range-slider"
+                            style={{ marginTop: '8px' }}
+                        />
+                    </div>
+
                     {/* 笑い声設定 */}
                     <div style={{ marginBottom: '16px', padding: '16px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

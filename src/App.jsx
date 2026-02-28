@@ -47,7 +47,9 @@ function App() {
     autoSilence: false,
     silenceThreshold: 50,
     switchCooldown: 2.0,
-    bgmVolume: 50
+    bgmVolume: 50,
+    crossfade: false,
+    crossfadeSpeed: 150
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -481,6 +483,7 @@ function App() {
 
       <main className="main-content">
         <Preview
+          activeTabId={activeTabId}
           globalSettings={globalSettings}
           parts={activeExpression.parts}
           transform={transform}

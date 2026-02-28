@@ -7,7 +7,8 @@ export default function SettingsPanel({
     bgmList, selectedBgm, onBgmChange,
     isBgmPlaying, toggleBgmPlay, stopBgm,
     isStreamMode,
-    onManualSave
+    onManualSave,
+    onResetData
 }) {
     const fileInputRef = useRef(null);
 
@@ -282,19 +283,28 @@ export default function SettingsPanel({
                 </div>
             </div>
 
-            {/* 手動セーブボタン */}
+            {/* セーブ・リセット設定 */}
             <div className="setting-section" style={{ border: '1px solid var(--accent-color)', background: 'rgba(6, 182, 212, 0.05)', padding: '16px' }}>
-                <h3 style={{ marginBottom: '12px', color: 'var(--accent-color)' }}>💾 セーブ設定</h3>
+                <h3 style={{ marginBottom: '12px', color: 'var(--accent-color)' }}>💾 セーブ・初期化</h3>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-                    設定は自動で保存されますが、ブラウザを閉じる前に手動でセーブすることで確実にデータを残すことができます。
+                    設定は自動で保存されますが、確実にデータを残したい場合は手動セーブをお使いください。最初からやり直したい場合は全設定をリセットできます。
                 </p>
-                <button 
-                  className="learning-btn" 
-                  onClick={onManualSave}
-                  style={{ width: '100%', background: 'var(--accent-color)', color: 'black', fontWeight: 'bold' }}
-                >
-                    今の状態を手動でセーブする
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      className="learning-btn" 
+                      onClick={onManualSave}
+                      style={{ flex: 1, background: 'var(--accent-color)', color: 'black', fontWeight: 'bold' }}
+                    >
+                        手動でセーブ
+                    </button>
+                    <button 
+                      className="learning-btn" 
+                      onClick={onResetData}
+                      style={{ flex: 1, background: 'rgba(255, 50, 50, 0.2)', border: '1px solid #ef4444', color: '#fca5a5' }}
+                    >
+                        全データリセット
+                    </button>
+                </div>
             </div>
         </div>
     );

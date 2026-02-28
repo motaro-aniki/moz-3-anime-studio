@@ -8,7 +8,7 @@ import AboutModal from './components/AboutModal';
 
 import useAudioAnalyzer from './hooks/useAudioAnalyzer';
 import useAnimation from './hooks/useAnimation';
-import { loadAppData, saveAppData } from './utils/storage';
+import { loadAppData, saveAppData, clearAppData } from './utils/storage';
 import debounce from 'lodash/debounce';
 
 export const DEFAULT_PARTS = {
@@ -339,6 +339,17 @@ function App() {
     }
   };
 
+  const resetAllData = async () => {
+    if (window.confirm('本当にすべての設定とタブをリセットして初期状態に戻しますか？\n※自分で追加した画像設定などはすべて消去されます。')) {
+      try {
+        await clearAppData();
+        window.location.reload();
+      } catch (e) {
+        window.alert('リセットに失敗しました。');
+      }
+    }
+  };
+
   // Save data when state changes (debounced)
   useEffect(() => {
     if (!hasLoadedData) return;
@@ -532,6 +543,7 @@ function App() {
             audioAnalyzer={audioAnalyzer}
             isStreamMode={isStreamMode}
             onManualSave={manualSave}
+            onResetData={resetAllData}
             bgmList={bgmList}
             selectedBgm={selectedBgm}
             onBgmChange={handleBgmChange}

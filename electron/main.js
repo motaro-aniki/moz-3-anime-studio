@@ -11,6 +11,8 @@ function createWindow() {
         title: 'MOZ-3 Anime Studio',
         width: 1200,
         height: 800,
+        transparent: true,
+        backgroundColor: '#00000000',
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false, // Security best practice

@@ -1,7 +1,7 @@
 import React from 'react';
 import DropZone from './DropZone';
 
-export default function SlotPanel({ parts, onPartChange }) {
+export default function SlotPanel({ parts, onPartChange, tabName, onResetTransform }) {
 
     const mouthConfigs = [
         { key: 'mouth0', icon: '😐', label: '閉じた口' },
@@ -47,6 +47,17 @@ export default function SlotPanel({ parts, onPartChange }) {
                     <DropZone label="半開きの目" icon="😑" value={parts.eyeHalf} onChange={(url) => onPartChange('eyeHalf', url)} />
                     <DropZone label="閉じた目" icon="😌" value={parts.eyeClosed} onChange={(url) => onPartChange('eyeClosed', url)} />
                 </div>
+            </div>
+
+            <div className="slot-group" style={{ marginTop: '24px', borderTop: '1px solid var(--glass-border)', paddingTop: '16px' }}>
+                <h3 style={{ marginBottom: '12px' }}>モデルの配置</h3>
+                <button
+                    className="bg-toggle-btn"
+                    style={{ width: '100%', padding: '12px' }}
+                    onClick={onResetTransform}
+                >
+                    🔄 {tabName} のモデル配置をリセット
+                </button>
             </div>
 
         </div>

@@ -24,7 +24,8 @@ export const DEFAULT_PARTS = {
 export const DEFAULT_EXP_SETTINGS = {
   preset: 'off',
   idleAnim: 'breathing',
-  breathSpeed: 50
+  breathSpeed: 50,
+  transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }
 };
 
 function App() {
@@ -46,8 +47,7 @@ function App() {
     autoSilence: false,
     silenceThreshold: 50,
     switchCooldown: 2.0,
-    bgmVolume: 50,
-    globalTransform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }
+    bgmVolume: 50
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);

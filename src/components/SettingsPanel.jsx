@@ -131,18 +131,7 @@ export default function SettingsPanel({
                     </div>
                 </div>
 
-                <div style={{ marginTop: '24px', borderTop: '1px solid var(--glass-border)', paddingTop: '16px' }}>
-                    <div className="slider-header" style={{ marginBottom: '8px' }}>
-                        <span>モデルの配置</span>
-                    </div>
-                    <button
-                        className="bg-toggle-btn"
-                        style={{ width: '100%' }}
-                        onClick={() => updateGlobal('globalTransform', { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 })}
-                    >
-                        🔄 配置を一括リセット
-                    </button>
-                </div>
+
             </div>
 
             <div className="setting-section glass-panel" style={{ padding: '16px', marginBottom: '24px' }}>

@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import TransformBox from './TransformBox';
 
-export default function Preview({ globalSettings, onGlobalSettingsChange, parts, transform, currentEye, currentMouthKey, isStreamMode }) {
+export default function Preview({ globalSettings, parts, transform, currentEye, currentMouthKey, isStreamMode, layoutTransform, onLayoutTransformChange }) {
     const [isEditMode, setIsEditMode] = useState(false);
 
     const handleTransformChange = (newTransform) => {
-        if (onGlobalSettingsChange) {
-            onGlobalSettingsChange({ ...globalSettings, globalTransform: newTransform });
+        if (onLayoutTransformChange) {
+            onLayoutTransformChange(newTransform);
         }
     };
 
-    const gTransform = globalSettings.globalTransform || { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 };
+    const gTransform = layoutTransform || { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 };
 
     return (
         <div className="preview-container" style={{ position: 'relative' }}>

@@ -31,3 +31,12 @@ export const loadAppData = async () => {
         return null;
     }
 };
+
+export const clearAppData = async () => {
+    try {
+        await localforage.clear();
+    } catch (err) {
+        console.error('Error clearing app data:', err);
+        throw err;
+    }
+};

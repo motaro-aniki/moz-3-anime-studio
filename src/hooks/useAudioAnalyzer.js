@@ -253,7 +253,8 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
         }
 
         // Delay / Hysteresis: only switch if this tone has been sustained
-        if (queue.length === REQUIRED_FRAMES_FOR_SWITCH && queue.every(t => t === rawTone)) {
+        const recentToneCount = queue.filter(t => t === rawTone).length;
+        if (queue.length === REQUIRED_FRAMES_FOR_SWITCH && recentToneCount >= 8) {
             // Expression Switch Stabilization Logic (Gate Node & Timer Node equivalent)
             if (!isLockedRef.current) {
                 if (currentToneRef.current !== rawTone || rawTone === 'laugh') {
@@ -378,26 +379,27 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
 
             // --- Laugh Detection Math ---
             // Condition 1: Peak volume recently was high (absorbs dips in 'ha-ha' rhythm)
-            const isLoud = maxVol > 0.45;
-            // Condition 2: Pitch > Normal_Average * 1.5
-            const isHighPitch = smoothedPitch > (calibratedNormal * 1.5);
+            const isLoud = maxVol > 0.35;
+            // Condition 2: Pitch > Normal_Average * 1.25 (Laughter is generally higher pitch)
+            const isHighPitch = smoothedPitch > (calibratedNormal * 1.25);
             // Condition 3: Envelope fluctuates rapidly (rhythm of laugh)
             const hasRhythm = volVariance > 0.15;
 
             // Anti-False-Positive Filters (Click / Keyboard rejection)
             let lowEnergy = 0;
             let highEnergy = 0;
-            const midBin = Math.floor(2500 / binSize);
+            const midBin = Math.floor(2000 / binSize); // Check energy below 2kHz vs above 2kHz
             for (let i = startBin; i < dataArray.length; i++) {
                 if (i < midBin) lowEnergy += dataArray[i];
                 else highEnergy += dataArray[i];
             }
-            // Vocal sounds concentrate energy in fundamentals and lower formants (below 2.5kHz)
-            const isVoiceLike = lowEnergy > (highEnergy * 1.5);
+            // Vocal sounds concentrate energy in fundamentals and lower formants.
+            // Sharp noises (clicks, keyboard) have lots of high-frequency white noise.
+            const isVoiceLike = lowEnergy > (highEnergy * 2.0);
 
             // A laugh should be sustained longer than a single mechanical click
             const framesAboveThreshold = volHistory.filter(v => v > 0.15).length;
-            const isSustained = framesAboveThreshold >= 6; // At least ~100ms of decent volume
+            const isSustained = framesAboveThreshold >= 8; // At least ~130ms of decent volume
 
             // Gate Node / Switch Logic
             if (globalSettings.autoLaugh && isLoud && isHighPitch && hasRhythm && isVoiceLike && isSustained) {

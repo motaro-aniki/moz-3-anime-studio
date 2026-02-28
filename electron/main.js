@@ -2,8 +2,6 @@ import electron from 'electron';
 const { app, BrowserWindow, ipcMain, systemPreferences } = electron;
 import path from 'path';
 
-// OBSのウィンドウキャプチャで描画がフリーズ・消失する問題の対策
-app.disableHardwareAcceleration();
 
 const isDev = !app.isPackaged;
 app.setName('MOZ-3 Anime Studio');

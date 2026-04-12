@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import TransformBox from './TransformBox';
+// import TransformBox from './TransformBox';
 
 export default function Preview({ globalSettings, activeTabId, parts, transform, currentEye, currentMouthKey, isStreamMode, layoutTransform, onLayoutTransformChange }) {
     const [isEditMode, setIsEditMode] = useState(false);
@@ -47,13 +47,14 @@ export default function Preview({ globalSettings, activeTabId, parts, transform,
     return (
         <div className="preview-container" style={{ position: 'relative' }}>
             <div className={`preview-canvas-wrapper ${isFading ? 'cf-bounce' : ''}`} style={{ backgroundColor: getBgColor(globalSettings.bgColor), animationDuration: `${fadeSpeed}ms` }}>
-                <TransformBox
+                {/* <TransformBox
                     transform={gTransform}
                     onChange={handleTransformChange}
                     isEditMode={isEditMode}
                     setEditMode={setIsEditMode}
                     isStreamMode={isStreamMode}
-                >
+                > */}
+                <>
                     <div
                         className="preview-canvas"
                         style={{
@@ -81,7 +82,8 @@ export default function Preview({ globalSettings, activeTabId, parts, transform,
                             {parts[currentEye] && <img src={parts[currentEye]} className={`avatar-layer ${isFading ? 'cf-eye-slide-in' : ''}`} style={{ animationDuration: `${fadeSpeed}ms` }} alt="eye" />}
                         </div>
                     </div>
-                </TransformBox>
+                </>
+                {/* </TransformBox> */}
             </div>
             {!isStreamMode && !isEditMode && (
                  <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(0,0,0,0.5)', padding: '6px 12px', borderRadius: '4px', fontSize: '0.8rem', color: '#fff', pointerEvents: 'none', opacity: 0.6 }}>

@@ -73,6 +73,25 @@ export default function SettingsPanel({
                 </div>
 
                 <div style={{ marginBottom: '16px' }}>
+                    <div className="slider-header">
+                        <span>環境ノイズカット (ノイズゲート)</span>
+                        <span>{globalSettings.noiseGateThreshold ?? 5}%</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={globalSettings.noiseGateThreshold ?? 5}
+                        onChange={(e) => updateGlobal('noiseGateThreshold', parseInt(e.target.value, 10))}
+                        className="range-slider"
+                        style={{ marginTop: '8px' }}
+                    />
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                        マイクが拾う環境音やキーボード音で反応してしまう場合は上げてください
+                    </p>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
                     <div className="slider-header" style={{ marginBottom: '8px' }}>
                         <span>待機中の動き</span>
                     </div>

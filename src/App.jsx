@@ -72,6 +72,7 @@ function App() {
 
   const [globalSettings, setGlobalSettings] = useState({
     sensitivity: 50,
+    noiseGateThreshold: 5,
     bgColor: 'transparent',
     autoLaugh: true,
     autoSilence: true,

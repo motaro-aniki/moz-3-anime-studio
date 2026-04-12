@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
 export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal = null) {
-    const { sensitivity, silenceThreshold, switchCooldown = 2.0, enableCooldown = true } = globalSettings;
+    const { sensitivity, silenceThreshold, noiseGateThreshold = 5, switchCooldown = 2.0, enableCooldown = true } = globalSettings;
     // Refs for states to ensure the loop closure always reads the latest values
     const isActiveRef = useRef(false);
     const isPlayingFileRef = useRef(false);
@@ -41,6 +41,8 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
 
     // Tone Detection specific Refs
     const silenceStartRef = useRef(null);
+    const clickMuteTimerRef = useRef(0);
+    const speakingHangTimerRef = useRef(0);
 
     // --- Advanced Auto-Switch (Laugh Calibration Logic) ---
     // User_Pitch_Normal
@@ -138,13 +140,33 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
             if (isPlayingFile) stopFile();
             initContext();
 
+            // Enable built-in browser/Chromium Hardware & AI noise suppression
+            const baseAudioConstraints = {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: false // Prevent the browser from boosting volume to catch quiet noises
+            };
+
             const constraints = {
-                audio: deviceId && deviceId !== 'default' ? { deviceId: { exact: deviceId } } : true
+                audio: deviceId && deviceId !== 'default' ? { ...baseAudioConstraints, deviceId: { exact: deviceId } } : baseAudioConstraints
             };
 
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
             sourceRef.current = audioContextRef.current.createMediaStreamSource(stream);
-            sourceRef.current.connect(micAnalyserRef.current);
+
+            // --- Physical Bandpass Filter (Cut out desk bumps and high frequency clicks) ---
+            const highpassFilter = audioContextRef.current.createBiquadFilter();
+            highpassFilter.type = 'highpass';
+            highpassFilter.frequency.value = 250; // Ignore sub-bass (desk bumps, AC rumbles)
+
+            const lowpassFilter = audioContextRef.current.createBiquadFilter();
+            lowpassFilter.type = 'lowpass';
+            lowpassFilter.frequency.value = 3500; // Ignore high frequencies (mouse clicks, sharp hisses)
+
+            // Connect: Source -> Highpass -> Lowpass -> Analyser
+            sourceRef.current.connect(highpassFilter);
+            highpassFilter.connect(lowpassFilter);
+            lowpassFilter.connect(micAnalyserRef.current);
 
             setIsActive(true);
             setDetectedTone(null);
@@ -306,15 +328,26 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
         let normalized = (average / 128) * multiplier;
         if (normalized > 1) normalized = 1;
 
-        setLevel(normalized);
+        // NOTE: We no longer unconditionaly setLevel(normalized). We set it to 0 if it's noise/click.
 
-        // --- Volume Envelope Analysis (Rhythm) ---
+        // --- Volume Envelope & Transient (Click) Analysis ---
         recentVolumesRef.current.push(normalized);
         if (recentVolumesRef.current.length > 15) { // Track last ~250ms at 60fps
             recentVolumesRef.current.shift();
         }
 
         const volHistory = recentVolumesRef.current;
+        const len = volHistory.length;
+        if (len >= 2) {
+            const attack = volHistory[len - 1] - volHistory[len - 2];
+            // A human voice plosive takes ~30-50ms to rise. A mechanical switch takes <5ms.
+            // If volume jumps wildly in a single 16ms frame, it is a hardware click/keyboard noise.
+            if (attack > 0.20) {
+                clickMuteTimerRef.current = time;
+            }
+        }
+        const isMutedByClick = (time - clickMuteTimerRef.current) < 250; // Mute all lip sync for 250ms after a click
+
         const maxVol = Math.max(...volHistory);
         const minVol = Math.min(...volHistory);
         const volVariance = maxVol - minVol;
@@ -322,9 +355,11 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
         // --- Silence Detection ---
         // RMS Node threshold logic
         const silenceDurSeconds = 0.5 + (silenceThreshold / 100) * 9.5;
-        const silenceMaxVol = 0.05;
+        const silenceMaxVol = noiseGateThreshold / 100;
 
-        if (normalized <= silenceMaxVol) {
+        // Gate: Drop if purely silent, or if forcibly muted by a physical click
+        if (normalized <= silenceMaxVol || isMutedByClick) {
+            setLevel(0); // Force mouth closed
             setPitch(calibratedNormal);
             if (silenceStartRef.current === null) {
                 silenceStartRef.current = time;
@@ -379,21 +414,13 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
                 tempPitchesRef.current.push(smoothedPitch);
             }
 
-            // --- Laugh Detection Math ---
-            // Condition 1: Peak volume recently was high (absorbs dips in 'ha-ha' rhythm)
-            const isLoud = maxVol > 0.30;
-            // Condition 2: Pitch is slightly higher than baseline, OR it's a very loud laugh burst
-            const isHighPitch = smoothedPitch > (calibratedNormal * 1.15) || maxVol > 0.60;
-            // Condition 3: Envelope fluctuates rapidly (rhythm of laugh)
-            const hasRhythm = volVariance > 0.08;
-
-            // Anti-False-Positive Filters (Click / Keyboard rejection)
+            // --- Spectral Analysis (Voice vs Noise) ---
             let lowEnergy = 0;
             let highEnergy = 0;
             let lowBinsCount = 0;
             let highBinsCount = 0;
-            const midBin = Math.floor(1500 / binSize); // 1.5kHz upper end of strong voice fundamentals
-            const highBin = Math.floor(6000 / binSize); // Ignore ultra-high ambient hiss
+            const midBin = Math.floor(1200 / binSize); // Voice fundamentals
+            const highBin = Math.floor(8000 / binSize); // Upper frequencies
             
             for (let i = startBin; i < highBin && i < dataArray.length; i++) {
                 if (i < midBin) {
@@ -407,29 +434,35 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
             const avgLow = lowBinsCount > 0 ? (lowEnergy / lowBinsCount) : 0;
             const avgHigh = highBinsCount > 0 ? (highEnergy / highBinsCount) : 0;
 
-            // Vocal sounds (vowels) concentrate energy massively below 1.5kHz.
-            // Sharp transients (keyboard clicks) are broadband noise where avgLow ≈ avgHigh.
+            // 1.5x ratio is forgiving enough for all voices, but rejects ambient hum/hiss
             const isVoiceLike = avgLow > (avgHigh * 1.5);
-
-            // Transient Attack (Click) Rejection
-            // A sharp click/keyboard hit causes the volume to spike instantly.
-            // Vocal cords require time to ramp up (attack time).
-            let maxAttackSlope = 0;
-            for (let i = 1; i < volHistory.length; i++) {
-                const diff = volHistory[i] - volHistory[i-1];
-                if (diff > maxAttackSlope) maxAttackSlope = diff;
+            
+            if (isVoiceLike) {
+                 speakingHangTimerRef.current = time;
             }
-            const isNotClick = maxAttackSlope < 0.45; // Reject instant 45%+ jumps in a single 16ms frame
+            // Add a "Hang Time" of 500ms. If we hit a hissing "S" (not voice-like), we assume it's still speech.
+            const isSpeaking = (time - speakingHangTimerRef.current) < 500;
 
-            // A laugh should be sustained longer than a single mechanical click or lip smack
+            if (isSpeaking) {
+                setLevel(normalized); // Allow lip sync
+            } else {
+                setLevel(0); // Loud ambient noise (e.g. constant fan). Mute lip sync.
+            }
+
+            // --- Laugh Detection Math ---
+            const isLoud = maxVol > 0.30;
+            const isHighPitch = smoothedPitch > (calibratedNormal * 1.15) || maxVol > 0.60;
+            const hasRhythm = volVariance > 0.08;
             const framesAboveThreshold = volHistory.filter(v => v > 0.10).length;
             const isSustained = framesAboveThreshold >= 6; // At least ~100ms of decent volume
 
             // Gate Node / Switch Logic
-            if (globalSettings.autoLaugh && isLoud && isHighPitch && hasRhythm && isVoiceLike && isSustained && isNotClick) {
+            if (globalSettings.autoLaugh && isLoud && isHighPitch && hasRhythm && isVoiceLike && isSustained) {
                 commitToneWithBuffer('laugh');
-            } else {
+            } else if (isSpeaking) {
                 commitToneWithBuffer('normal');
+            } else {
+                commitToneWithBuffer('silence');
             }
         }
 
@@ -441,7 +474,7 @@ export default function useAudioAnalyzer(globalSettings, initialCalibratedNormal
         return () => {
             if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
         };
-    }, [isActive, isPlayingFile, sensitivity, silenceThreshold, switchCooldown, calibrationPhase, calibratedNormal, globalSettings.autoLaugh, globalSettings.autoSilence, selectedDeviceId]);
+    }, [isActive, isPlayingFile, sensitivity, silenceThreshold, noiseGateThreshold, switchCooldown, calibrationPhase, calibratedNormal, globalSettings.autoLaugh, globalSettings.autoSilence, selectedDeviceId]);
 
     useEffect(() => {
         return () => {
